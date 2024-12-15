@@ -107,4 +107,23 @@ exports.getApprovedSheets = async (req, res) => {
       res.status(500).json({ message: 'Something went wrong', error });
     }
 };
+
+exports.getSheetById = async (req, res) => {
+    try {
+      const { id } = req.params;
+  
+      const sheet = await prisma.sheet.findUnique({
+        where: { id: parseInt(id) },
+      });
+  
+      if (!sheet) {
+        return res.status(404).json({ message: 'Sheet not found' });
+      }
+  
+      res.status(200).json({ sheet });
+    } catch (error) {
+      res.status(500).json({ message: 'Something went wrong', error });
+    }
+};
+  
   
