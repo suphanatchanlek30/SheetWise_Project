@@ -70,3 +70,41 @@ exports.updateSheetStatus = async (req, res) => {
       res.status(500).json({ message: 'Something went wrong', error });
     }
 };
+
+// ดึงรายการชีทที่อนุมัติแล้ว
+exports.getApprovedSheets = async (req, res) => {
+    try {
+      const { search, category, minPrice, maxPrice } = req.query;
+  
+      // สร้างตัวกรอง
+      const filters = {
+        status: 'approved', // ดึงเฉพาะชีทที่อนุมัติแล้ว
+      };
+  
+      if (search) {
+        filters.OR = [
+          { title: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } },
+        ];
+      }
+  
+      if (category) {
+        filters.category = category;
+      }
+  
+      if (minPrice || maxPrice) {
+        filters.price = {};
+        if (minPrice) filters.price.gte = parseFloat(minPrice);
+        if (maxPrice) filters.price.lte = parseFloat(maxPrice);
+      }
+  
+      const sheets = await prisma.sheet.findMany({
+        where: filters,
+      });
+  
+      res.status(200).json({ sheets });
+    } catch (error) {
+      res.status(500).json({ message: 'Something went wrong', error });
+    }
+};
+  

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { uploadSheet, getPendingSheets, updateSheetStatus  } = require('../controllers/sheetController');
+const { uploadSheet, getPendingSheets, updateSheetStatus, getApprovedSheets  } = require('../controllers/sheetController');
 const { protect } = require('../middlewares/authMiddleware');
 const { isAdmin } = require('../middlewares/adminMiddleware');
 
@@ -12,5 +12,9 @@ router.get('/pending', protect, isAdmin, getPendingSheets);
 
 // เส้นทางสำหรับอนุมัติหรือปฏิเสธชีท
 router.put('/:id/status', protect, isAdmin, updateSheetStatus);
+
+// ดึงรายการชีททั้งหมดที่มีสถานะ approved
+router.get('/', getApprovedSheets);
+
 
 module.exports = router;
