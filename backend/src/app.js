@@ -19,6 +19,7 @@ app.use(bodyParser.json()); // แปลงข้อมูล JSON ที่ส�
 app.use('/api/auth', authRoutes);
 app.use('/api/sheets', sheetRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/orders', orderRoutes);
 
 // เส้นทางพื้นฐาน
 app.get('/', (req, res) => {
