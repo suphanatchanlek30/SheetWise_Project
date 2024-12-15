@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const authRoutes = require('./routes/auth');
+const sheetRoutes = require('./routes/sheet');
 
 // โหลดตัวแปรแวดล้อมจาก .env
 dotenv.config();
@@ -15,6 +16,7 @@ app.use(bodyParser.json()); // แปลงข้อมูล JSON ที่ส�
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/sheets', sheetRoutes);
 
 // เส้นทางพื้นฐาน
 app.get('/', (req, res) => {

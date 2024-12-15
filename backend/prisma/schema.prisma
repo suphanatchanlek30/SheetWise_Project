@@ -21,6 +21,20 @@ model User {
   role               String    @default("user")
   resetToken         String?   // Token สำหรับรีเซ็ตรหัสผ่าน
   resetTokenExpires  DateTime? // วันหมดอายุของ Token
+  sheets             Sheet[]   // ฟิลด์ความสัมพันธ์กลับมายัง Sheet
   createdAt          DateTime  @default(now())
 }
+
+model Sheet {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  price       Float
+  fileUrl     String    // ลิงก์ไฟล์ PDF
+  status      String    @default("pending") // pending, approved, rejected
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id])
+  createdAt   DateTime  @default(now())
+}
+
 
