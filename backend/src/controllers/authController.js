@@ -4,6 +4,8 @@ const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
 
+const crypto = require('crypto');
+
 exports.register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -74,3 +76,85 @@ exports.login = async (req, res) => {
       res.status(500).json({ message: 'Something went wrong', error });
     }
 };
+
+exports.logout = (req, res) => {
+    try {
+      // ลบ Token ในฝั่ง Client (Frontend จะจัดการ)
+      res.status(200).json({ message: 'Logout successful' });
+    } catch (error) {
+      res.status(500).json({ message: 'Something went wrong', error });
+    }
+};
+  
+exports.forgotPassword = async (req, res) => {
+    try {
+      const { email } = req.body;
+  
+      // ค้นหาผู้ใช้ในระบบ
+      const user = await prisma.user.findUnique({ where: { email } });
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      // สร้าง Token สำหรับรีเซ็ตรหัสผ่าน
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
+  
+      // อัปเดต Token ลงในฐานข้อมูล
+      await prisma.user.update({
+        where: { email },
+        data: {
+          resetToken: resetTokenHash,
+          resetTokenExpires: new Date(Date.now() + 10 * 60 * 1000), // Token มีอายุ 10 นาที
+        },
+      });
+  
+      // ส่งอีเมล (จำลอง)
+      console.log(`Password reset link: http://localhost:3000/reset-password?token=${resetToken}`);
+  
+      res.status(200).json({ message: 'Password reset link sent to your email' });
+    } catch (error) {
+      res.status(500).json({ message: 'Something went wrong', error });
+    }
+};
+
+exports.resetPassword = async (req, res) => {
+    try {
+      const { token, newPassword } = req.body;
+  
+      // แปลง Token เป็น Hash
+      const resetTokenHash = crypto.createHash('sha256').update(token).digest('hex');
+  
+      // ค้นหาผู้ใช้ด้วย Token และตรวจสอบว่า Token ยังไม่หมดอายุ
+      const user = await prisma.user.findFirst({
+        where: {
+          resetToken: resetTokenHash,
+          resetTokenExpires: {
+            gt: new Date(), // Token ต้องยังไม่หมดอายุ
+          },
+        },
+      });
+  
+      if (!user) {
+        return res.status(400).json({ message: 'Invalid or expired token' });
+      }
+  
+      // เข้ารหัสรหัสผ่านใหม่
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+  
+      // อัปเดตรหัสผ่านและลบ Token
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          password: hashedPassword,
+          resetToken: null,
+          resetTokenExpires: null,
+        },
+      });
+  
+      res.status(200).json({ message: 'Password has been reset successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Something went wrong', error });
+    }
+};
+  

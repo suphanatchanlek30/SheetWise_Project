@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { register, login } = require('../controllers/authController');
+const { register, login, logout, forgotPassword, resetPassword } = require('../controllers/authController');
 const { protect } = require('../middlewares/authMiddleware');
 
 // เส้นทางสำหรับ Register
@@ -17,5 +17,13 @@ router.get('/profile', protect, (req, res) => {
     });
 });
 
+// เส้นทางสำหรับ Logout
+router.post('/logout', logout);
+
+// เส้นทางสำหรับรีเซ็ตรหัสผ่าน
+router.post('/forgot-password', forgotPassword);
+
+// เส้นทางสำหรับรีเซ็ตรหัสผ่าน
+router.post('/reset-password', resetPassword);
 
 module.exports = router;
