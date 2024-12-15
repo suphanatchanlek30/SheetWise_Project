@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { uploadSheet, getPendingSheets, updateSheetStatus, getApprovedSheets, getSheetById  } = require('../controllers/sheetController');
+const { uploadSheet, getPendingSheets, updateSheetStatus, getApprovedSheets, getSheetById, deleteSheet  } = require('../controllers/sheetController');
 const { protect } = require('../middlewares/authMiddleware');
 const { isAdmin } = require('../middlewares/adminMiddleware');
 
@@ -19,5 +19,7 @@ router.get('/', getApprovedSheets);
 // ดึงชีทตาม id
 router.get('/:id', getSheetById);
 
+// สำหรับลบชีท
+router.delete('/:id', protect, deleteSheet);
 
 module.exports = router;

@@ -126,4 +126,27 @@ exports.getSheetById = async (req, res) => {
     }
 };
   
+exports.deleteSheet = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user.userId; // รับ userId จาก JWT
+  
+      // ตรวจสอบว่าชีทนี้เป็นของผู้ใช้หรือ Admin
+      const sheet = await prisma.sheet.findUnique({ where: { id: parseInt(id) } });
+  
+      if (!sheet) {
+        return res.status(404).json({ message: 'Sheet not found' });
+      }
+  
+      if (sheet.userId !== userId && req.user.role !== 'admin') {
+        return res.status(403).json({ message: 'Access denied' });
+      }
+  
+      await prisma.sheet.delete({ where: { id: parseInt(id) } });
+  
+      res.status(200).json({ message: 'Sheet deleted successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Something went wrong', error });
+    }
+};
   
