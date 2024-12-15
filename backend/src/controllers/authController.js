@@ -7,40 +7,43 @@ const prisma = new PrismaClient();
 const crypto = require('crypto');
 
 exports.register = async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
-
-    // ตรวจสอบว่ามีผู้ใช้งานอยู่แล้วหรือไม่
-    const existingUser = await prisma.user.findUnique({ where: { email } });
-    if (existingUser) {
-      return res.status(400).json({ message: 'Email already exists' });
-    }
-
-    // เข้ารหัสรหัสผ่าน (Hash Password)
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // บันทึกผู้ใช้ลงในฐานข้อมูล
-    const newUser = await prisma.user.create({
+    try {
+      const { name, email, password } = req.body;
+  
+      // ตรวจสอบว่าอีเมลมีอยู่ในระบบหรือยัง
+      const existingUser = await prisma.user.findUnique({
+        where: { email },
+      });
+  
+      if (existingUser) {
+        return res.status(400).json({ message: "Email is already in use" });
+      }
+  
+      // แฮชรหัสผ่าน
+      const hashedPassword = await bcrypt.hash(password, 10);
+  
+      // สร้างผู้ใช้ใหม่
+      const newUser = await prisma.user.create({
         data: {
           name,
           email,
           password: hashedPassword,
         },
-    });
-      
-
-    // สร้าง JWT Token
-    const token = jwt.sign(
-        { userId: user.id, email: user.email, role: user.role },
-        process.env.JWT_SECRET,
-        { expiresIn: '24h' }
-    );
-      
-
-    res.status(201).json({ message: 'User registered successfully', token });
-  } catch (error) {
-    res.status(500).json({ message: 'Something went wrong', error });
-  }
+      });
+  
+      // ส่ง Response สำเร็จ
+      res.status(201).json({
+        message: "User registered successfully",
+        user: { id: newUser.id, name: newUser.name, email: newUser.email },
+      });
+    } catch (error) {
+      console.error("Error in register:", error);
+  
+      res.status(500).json({
+        message: "Something went wrong",
+        error: error.message || "Unknown error occurred",
+      });
+    }
 };
 
 exports.login = async (req, res) => {
