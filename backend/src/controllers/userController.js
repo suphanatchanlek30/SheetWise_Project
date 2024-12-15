@@ -60,3 +60,24 @@ exports.updateUserProfile = async (req, res) => {
     }
 };
   
+// ดึงรายชื่อผู้ใช้ทั้งหมดในระบบ (เฉพาะ Admin เท่านั้นที่สามารถใช้งานได้)
+exports.getAllUsers = async (req, res) => {
+    try {
+      // ตรวจสอบว่า user ที่ขอใช้งานเป็น Admin หรือไม่
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({ message: 'Access denied: Admins only' });
+      }
+  
+      // ดึงข้อมูลผู้ใช้ทั้งหมดจากฐานข้อมูล
+      const users = await prisma.user.findMany({
+        select: { id: true, name: true, email: true, role: true, createdAt: true }, // เลือกเฉพาะฟิลด์ที่ต้องการส่งกลับ
+      });
+  
+      // ส่งข้อมูลกลับไป
+      res.status(200).json({ users });
+    } catch (error) {
+      console.error('Error in getAllUsers:', error);
+      res.status(500).json({ message: 'Something went wrong', error: error.message });
+    }
+};
+  
