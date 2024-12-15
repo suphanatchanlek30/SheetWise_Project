@@ -22,6 +22,7 @@ model User {
   resetToken         String?   // Token สำหรับรีเซ็ตรหัสผ่าน
   resetTokenExpires  DateTime? // วันหมดอายุของ Token
   sheets             Sheet[]   // ฟิลด์ความสัมพันธ์กลับมายัง Sheet
+  orders             Order[]   // ฟิลด์ความสัมพันธ์กลับมายัง Order
   createdAt          DateTime  @default(now())
 }
 
@@ -34,7 +35,19 @@ model Sheet {
   status      String    @default("pending") // pending, approved, rejected
   userId      Int
   user        User      @relation(fields: [userId], references: [id])
+  orders      Order[]   // ฟิลด์ความสัมพันธ์กลับมายัง Order
   createdAt   DateTime  @default(now())
 }
 
+model Order {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  sheetId   Int
+  amount    Float
+  status    String   @default("pending") // pending, paid, failed
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  sheet     Sheet    @relation(fields: [sheetId], references: [id])
+}
 
