@@ -79,3 +79,23 @@ exports.downloadSheet = async (req, res) => {
     });
   }
 };
+
+// ดึงประวัติคำสั่งซื้อทั้งหมดของผู้ใช้
+exports.getOrders = async (req, res) => {
+    try {
+      const userId = req.user.userId; // รับ userId จาก JWT
+  
+      // ดึงคำสั่งซื้อทั้งหมดของผู้ใช้ที่ล็อกอินอยู่
+      const orders = await prisma.order.findMany({
+        where: { userId: userId },
+        include: { sheet: true }, // ดึงข้อมูลชีทที่เกี่ยวข้องกับคำสั่งซื้อ
+      });
+  
+      // ส่งคำสั่งซื้อทั้งหมดกลับไป
+      res.status(200).json({ orders });
+    } catch (error) {
+      console.error('Error in getOrders:', error);
+      res.status(500).json({ message: 'Something went wrong', error });
+    }
+};
+  
