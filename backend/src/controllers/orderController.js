@@ -99,3 +99,71 @@ exports.getOrders = async (req, res) => {
     }
 };
   
+// ดึงประวัติคำสั่งซื้อโดย ID
+exports.getOrderById = async (req, res) => {
+    try {
+      const { id } = req.params; // รับ ID ของคำสั่งซื้อจาก URL
+      const userId = req.user.userId; // รับ userId จาก JWT
+  
+      // ดึงคำสั่งซื้อเฉพาะ ID และข้อมูลชีท
+      const order = await prisma.order.findUnique({
+        where: { id: parseInt(id) },
+        include: { sheet: true },
+      });
+  
+      // ตรวจสอบว่าคำสั่งซื้อมีอยู่จริงและเป็นของผู้ใช้นี้
+      if (!order || order.userId !== userId) {
+        return res.status(404).json({ message: 'Order not found or access denied' });
+      }
+  
+      // ส่งข้อมูลคำสั่งซื้อกลับไป
+      res.status(200).json({ order });
+    } catch (error) {
+      console.error('Error in getOrderById:', error);
+      res.status(500).json({ message: 'Something went wrong', error });
+    }
+};
+  
+exports.createOrder = async (req, res) => {
+    try {
+      const { sheetId } = req.body; // รับ ID ของชีทจาก Request Body
+      const userId = req.user.userId; // รับ userId จาก JWT
+  
+      // ตรวจสอบว่าชีทมีอยู่และสถานะเป็น 'approved'
+      const sheet = await prisma.sheet.findUnique({
+        where: { id: parseInt(sheetId) },
+      });
+  
+      if (!sheet || sheet.status !== 'approved') {
+        return res.status(400).json({ message: 'Sheet is not available for purchase' });
+      }
+  
+      // ตรวจสอบว่าผู้ใช้นี้ยังไม่ได้ซื้อชีทนี้มาก่อน
+      const existingOrder = await prisma.order.findFirst({
+        where: { sheetId: sheet.id, userId: userId, status: 'paid' },
+      });
+  
+      if (existingOrder) {
+        return res.status(400).json({ message: 'You have already purchased this sheet' });
+      }
+  
+      // สร้างคำสั่งซื้อใหม่พร้อมสถานะ 'pending'
+      const newOrder = await prisma.order.create({
+        data: {
+          userId,
+          sheetId: sheet.id,
+          amount: sheet.price,
+          status: 'pending',
+        },
+      });
+  
+      // ส่งคำสั่งซื้อกลับไปยังผู้ใช้
+      res.status(201).json({
+        message: 'Order created successfully',
+        order: newOrder,
+      });
+    } catch (error) {
+      console.error('Error in createOrder:', error);
+      res.status(500).json({ message: 'Something went wrong', error });
+    }
+};
