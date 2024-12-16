@@ -7,6 +7,7 @@ const sheetRoutes = require('./routes/sheetRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const userRoutes = require('./routes/userRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 // โหลดตัวแปรแวดล้อมจาก .env
 dotenv.config();
@@ -23,6 +24,7 @@ app.use('/api/sheets', sheetRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/admin', adminRoutes);
 
 // เส้นทางพื้นฐาน
 app.get('/', (req, res) => {
