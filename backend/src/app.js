@@ -2,10 +2,11 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const authRoutes = require('./routes/auth');
-const sheetRoutes = require('./routes/sheet');
-const orderRoutes = require('./routes/order');
+const authRoutes = require('./routes/authRoutes');
+const sheetRoutes = require('./routes/sheetRoutes');
+const orderRoutes = require('./routes/orderRoutes');
 const userRoutes = require('./routes/userRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 // โหลดตัวแปรแวดล้อมจาก .env
 dotenv.config();
@@ -21,6 +22,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/sheets', sheetRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // เส้นทางพื้นฐาน
 app.get('/', (req, res) => {

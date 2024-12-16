@@ -1,8 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// This is your Prisma schema file
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
@@ -10,44 +7,57 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("DATABASE_URL") // เชื่อมต่อกับฐานข้อมูลผ่าน ENV
 }
 
+// **User Model**: เก็บข้อมูลของผู้ใช้ในระบบ
 model User {
-  id                 Int       @id @default(autoincrement())
-  email              String    @unique
-  password           String
-  name               String
-  role               String    @default("user")
-  resetToken         String?   // Token สำหรับรีเซ็ตรหัสผ่าน
-  resetTokenExpires  DateTime? // วันหมดอายุของ Token
-  sheets             Sheet[]   // ฟิลด์ความสัมพันธ์กลับมายัง Sheet
-  orders             Order[]   // ฟิลด์ความสัมพันธ์กลับมายัง Order
-  createdAt          DateTime  @default(now())
+  id                 Int              @id @default(autoincrement()) // Primary Key
+  email              String           @unique                      // อีเมลต้องไม่ซ้ำกัน
+  password           String                                         // รหัสผ่าน
+  name               String                                         // ชื่อผู้ใช้
+  role               String           @default("user")             // บทบาท (user หรือ admin)
+  resetToken         String?                                       // Token สำหรับรีเซ็ตรหัสผ่าน
+  resetTokenExpires  DateTime?                                    // วันหมดอายุของ Token
+  sheets             Sheet[]                                      // ความสัมพันธ์: ผู้ใช้สามารถมีชีทได้หลายชีท
+  orders             Order[]                                      // ความสัมพันธ์: ผู้ใช้สามารถมีคำสั่งซื้อได้หลายคำสั่ง
+  notifications      Notification[]                               // ความสัมพันธ์: ผู้ใช้สามารถมีการแจ้งเตือนหลายรายการ
+  createdAt          DateTime         @default(now())             // วันที่สร้างบัญชี
 }
 
+// **Sheet Model**: เก็บข้อมูลชีทที่ผู้ใช้อัปโหลด
 model Sheet {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String
-  price       Float
-  fileUrl     String    // ลิงก์ไฟล์ PDF
-  status      String    @default("pending") // pending, approved, rejected
-  userId      Int
-  user        User      @relation(fields: [userId], references: [id])
-  orders      Order[]   // ฟิลด์ความสัมพันธ์กลับมายัง Order
-  createdAt   DateTime  @default(now())
+  id          Int       @id @default(autoincrement())            // Primary Key
+  title       String                                           // ชื่อชีท
+  description String                                           // รายละเอียดของชีท
+  price       Float                                           // ราคาของชีท
+  fileUrl     String                                          // ลิงก์สำหรับดาวน์โหลด PDF
+  status      String      @default("pending")                 // สถานะของชีท (pending, approved, rejected)
+  userId      Int                                           // Foreign Key เชื่อมกับ User
+  user        User       @relation(fields: [userId], references: [id]) // ความสัมพันธ์กับ User
+  orders      Order[]                                       // ความสัมพันธ์: ชีทอาจมีคำสั่งซื้อหลายรายการ
+  createdAt   DateTime    @default(now())                   // วันที่สร้างชีท
 }
 
+// **Order Model**: เก็บข้อมูลคำสั่งซื้อ
 model Order {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  sheetId   Int
-  amount    Float
-  status    String   @default("pending") // pending, paid, failed
-  createdAt DateTime @default(now())
+  id        Int      @id @default(autoincrement())           // Primary Key
+  userId    Int                                        // Foreign Key เชื่อมกับ User
+  sheetId   Int                                        // Foreign Key เชื่อมกับ Sheet
+  amount    Float                                      // จำนวนเงินที่ซื้อ
+  status    String   @default("pending")              // สถานะคำสั่งซื้อ (pending, paid, failed)
+  createdAt DateTime @default(now())                  // วันที่สร้างคำสั่งซื้อ
 
-  user      User     @relation(fields: [userId], references: [id])
-  sheet     Sheet    @relation(fields: [sheetId], references: [id])
+  user      User     @relation(fields: [userId], references: [id]) // ความสัมพันธ์กับ User
+  sheet     Sheet    @relation(fields: [sheetId], references: [id]) // ความสัมพันธ์กับ Sheet
 }
 
+// **Notification Model**: เก็บข้อมูลการแจ้งเตือน
+model Notification {
+  id        Int      @id @default(autoincrement())           // Primary Key
+  userId    Int                                         // Foreign Key เชื่อมกับ User
+  user      User     @relation(fields: [userId], references: [id]) // ความสัมพันธ์กับ User
+  message   String                                     // ข้อความแจ้งเตือน
+  isRead    Boolean  @default(false)                   // สถานะการอ่าน (true: อ่านแล้ว, false: ยังไม่ได้อ่าน)
+  createdAt DateTime @default(now())                   // วันที่สร้างการแจ้งเตือน
+}
