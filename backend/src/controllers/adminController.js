@@ -71,3 +71,28 @@ exports.updateSheetStatus = async (req, res) => {
       res.status(500).json({ message: 'Something went wrong', error: error.message });
     }
 };
+
+// ดึงประวัติการชำระเงินทั้งหมด
+exports.getAllTransactions = async (req, res) => {
+    try {
+      // ตรวจสอบว่า user ที่ร้องขอเป็น Admin หรือไม่
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({ message: 'Access denied: Admins only' });
+      }
+  
+      // ดึงรายการคำสั่งซื้อทั้งหมด
+      const transactions = await prisma.order.findMany({
+        include: {
+          sheet: { select: { id: true, title: true, price: true } }, // ดึงข้อมูลชีท
+          user: { select: { id: true, name: true, email: true } },  // ดึงข้อมูลผู้ใช้
+        },
+        orderBy: { createdAt: 'desc' }, // เรียงลำดับจากใหม่ไปเก่า
+      });
+  
+      res.status(200).json({ transactions });
+    } catch (error) {
+      console.error('Error in getAllTransactions:', error);
+      res.status(500).json({ message: 'Something went wrong', error: error.message });
+    }
+};
+  
