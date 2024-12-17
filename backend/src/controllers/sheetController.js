@@ -150,3 +150,53 @@ exports.deleteSheet = async (req, res) => {
     }
 };
   
+// ดึงชีททั้งหมดพร้อมการค้นหาและกรองข้อมูล
+exports.getFilteredSheets = async (req, res) => {
+  try {
+    // รับ Query Parameters จาก URL
+    const { search, status, price_min, price_max, sort, order } = req.query;
+
+    // สร้างเงื่อนไขสำหรับการกรองข้อมูล
+    const filters = {};
+
+    // ค้นหาชีทตามชื่อหรือคำอธิบาย (กรณีมี search)
+    if (search) {
+      filters.OR = [
+        { title: { contains: search, mode: 'insensitive' } }, // ค้นหาแบบไม่สนตัวพิมพ์เล็กใหญ่
+        { description: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    // กรองตามสถานะ เช่น approved, pending
+    if (status) {
+      filters.status = status;
+    }
+
+    // กรองตามช่วงราคา
+    if (price_min || price_max) {
+      filters.price = {};
+      if (price_min) filters.price.gte = parseFloat(price_min); // ราคา >= price_min
+      if (price_max) filters.price.lte = parseFloat(price_max); // ราคา <= price_max
+    }
+
+    // จัดเรียงข้อมูล
+    const sortOrder = {};
+    if (sort) {
+      sortOrder[sort] = order === 'desc' ? 'desc' : 'asc'; // เรียงลำดับตามฟิลด์และลำดับที่กำหนด
+    } else {
+      sortOrder.createdAt = 'desc'; // เรียงจากวันที่สร้างล่าสุดเป็นค่าเริ่มต้น
+    }
+
+    // ดึงข้อมูลจากฐานข้อมูล
+    const sheets = await prisma.sheet.findMany({
+      where: filters,
+      orderBy: sortOrder,
+    });
+
+    // ส่งผลลัพธ์กลับไป
+    res.status(200).json({ sheets });
+  } catch (error) {
+    console.error('Error in getFilteredSheets:', error);
+    res.status(500).json({ message: 'Something went wrong', error: error.message });
+  }
+};
