@@ -96,3 +96,43 @@ exports.getAllTransactions = async (req, res) => {
     }
 };
   
+// ดึงข้อมูลแดชบอร์ดสำหรับ Admin
+exports.getAdminDashboard = async (req, res) => {
+  try {
+    // ตรวจสอบว่า user เป็น Admin หรือไม่
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Access denied: Admins only' });
+    }
+
+    // 1. นับจำนวนชีทตามสถานะ
+    const pendingSheetsCount = await prisma.sheet.count({
+      where: { status: 'pending' },
+    });
+
+    const approvedSheetsCount = await prisma.sheet.count({
+      where: { status: 'approved' },
+    });
+
+    // 2. นับจำนวนคำสั่งซื้อทั้งหมด
+    const totalOrdersCount = await prisma.order.count();
+
+    // 3. คำนวณรายได้รวมจากคำสั่งซื้อที่ชำระเงินแล้ว (status = 'paid')
+    const totalRevenue = await prisma.order.aggregate({
+      _sum: {
+        amount: true,
+      },
+      where: { status: 'paid' },
+    });
+
+    // ส่งข้อมูลแดชบอร์ดกลับไป
+    res.status(200).json({
+      pendingSheets: pendingSheetsCount,
+      approvedSheets: approvedSheetsCount,
+      totalOrders: totalOrdersCount,
+      totalRevenue: totalRevenue._sum.amount || 0, // ถ้าไม่มีรายได้ให้แสดงเป็น 0
+    });
+  } catch (error) {
+    console.error('Error in getAdminDashboard:', error);
+    res.status(500).json({ message: 'Something went wrong', error: error.message });
+  }
+};
