@@ -217,3 +217,43 @@ exports.updateSlipStatus = async (req, res) => {
     res.status(500).json({ message: 'Something went wrong', error: error.message });
   }
 };
+
+// ยืนยันการชำระเงินแบบ Manual
+exports.confirmPaymentManual = async (req, res) => {
+  try {
+    const { orderId } = req.body;
+
+    // ตรวจสอบว่า User เป็น Admin หรือไม่
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Access denied. Admins only.' });
+    }
+
+    // ดึงข้อมูลคำสั่งซื้อจากฐานข้อมูล
+    const order = await prisma.order.findUnique({
+      where: { id: parseInt(orderId) },
+    });
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    // ตรวจสอบว่าสถานะคำสั่งซื้อยังไม่เป็น paid
+    if (order.status === 'paid') {
+      return res.status(400).json({ message: 'Order has already been paid' });
+    }
+
+    // อัปเดตสถานะคำสั่งซื้อเป็น paid
+    const updatedOrder = await prisma.order.update({
+      where: { id: parseInt(orderId) },
+      data: { status: 'paid' },
+    });
+
+    res.status(200).json({
+      message: 'Payment confirmed manually',
+      order: updatedOrder,
+    });
+  } catch (error) {
+    console.error('Error confirming payment manually:', error);
+    res.status(500).json({ message: 'Something went wrong', error: error.message });
+  }
+};

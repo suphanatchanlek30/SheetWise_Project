@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middlewares/authMiddleware');
-const { getPendingSheets, updateSheetStatus, getAllTransactions, getAdminDashboard, getPendingSlips, updateSlipStatus} = require('../controllers/adminController');
+const { getPendingSheets, updateSheetStatus, getAllTransactions, getAdminDashboard, getPendingSlips, updateSlipStatus, confirmPaymentManual} = require('../controllers/adminController');
 
 // ดึงรายการชีทที่รอตรวจสอบ
 router.get('/review-sheets', protect, getPendingSheets);
@@ -20,5 +20,8 @@ router.get('/slips', protect, getPendingSlips);
 
 // อัปเดตสถานะสลิป
 router.put('/slips/:id', protect, updateSlipStatus);
+
+// ยืนยันการชำระเงินแบบ Manual
+router.post('/payments/confirm', protect, confirmPaymentManual);
 
 module.exports = router;
