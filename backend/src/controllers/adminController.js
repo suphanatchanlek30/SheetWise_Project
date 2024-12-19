@@ -136,3 +136,32 @@ exports.getAdminDashboard = async (req, res) => {
     res.status(500).json({ message: 'Something went wrong', error: error.message });
   }
 };
+
+// ดึงรายการสลิปที่รอการตรวจสอบ
+exports.getPendingSlips = async (req, res) => {
+  try {
+    // ตรวจสอบว่า User เป็น Admin หรือไม่
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Access denied. Admins only.' });
+    }
+
+    // ดึงรายการสลิปที่มีสถานะ pending
+    const pendingSlips = await prisma.paymentSlip.findMany({
+      where: { status: 'pending' },
+      include: {
+        order: {
+          include: { sheet: true, user: true }, // ดึงข้อมูลคำสั่งซื้อ, ชีท, และผู้ใช้ที่เกี่ยวข้อง
+        },
+      },
+    });
+
+    // ส่งรายการสลิปกลับไป
+    res.status(200).json({
+      message: 'Pending slips fetched successfully',
+      slips: pendingSlips,
+    });
+  } catch (error) {
+    console.error('Error fetching pending slips:', error);
+    res.status(500).json({ message: 'Something went wrong', error: error.message });
+  }
+};
