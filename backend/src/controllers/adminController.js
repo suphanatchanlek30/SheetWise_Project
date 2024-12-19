@@ -165,3 +165,55 @@ exports.getPendingSlips = async (req, res) => {
     res.status(500).json({ message: 'Something went wrong', error: error.message });
   }
 };
+
+// อัปเดตสถานะสลิป
+exports.updateSlipStatus = async (req, res) => {
+  try {
+    const { id } = req.params; // รับ ID ของสลิปจาก URL
+    const { status } = req.body; // รับสถานะที่ต้องการเปลี่ยน (approved หรือ rejected)
+
+    // ตรวจสอบว่า User เป็น Admin หรือไม่
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Access denied. Admins only.' });
+    }
+
+    // ตรวจสอบว่าสถานะที่ส่งมาตรงกับ allowed statuses
+    const allowedStatuses = ['approved', 'rejected'];
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({ message: 'Invalid status' });
+    }
+
+    // ดึงข้อมูลสลิปจากฐานข้อมูล
+    const paymentSlip = await prisma.paymentSlip.findUnique({
+      where: { id: parseInt(id) },
+      include: { order: true }, // ดึงข้อมูลคำสั่งซื้อที่เกี่ยวข้อง
+    });
+
+    if (!paymentSlip) {
+      return res.status(404).json({ message: 'Payment slip not found' });
+    }
+
+    // อัปเดตสถานะสลิปในฐานข้อมูล
+    const updatedSlip = await prisma.paymentSlip.update({
+      where: { id: parseInt(id) },
+      data: { status },
+    });
+
+    // หากสถานะเป็น approved ให้เปลี่ยนสถานะคำสั่งซื้อเป็น paid
+    if (status === 'approved') {
+      await prisma.order.update({
+        where: { id: paymentSlip.orderId },
+        data: { status: 'paid' },
+      });
+    }
+
+    // ส่งข้อมูลกลับไป
+    res.status(200).json({
+      message: `Payment slip ${status} successfully`,
+      slip: updatedSlip,
+    });
+  } catch (error) {
+    console.error('Error updating slip status:', error);
+    res.status(500).json({ message: 'Something went wrong', error: error.message });
+  }
+};

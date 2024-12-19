@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middlewares/authMiddleware');
-const { getPendingSheets, updateSheetStatus, getAllTransactions, getAdminDashboard, getPendingSlips } = require('../controllers/adminController');
+const { getPendingSheets, updateSheetStatus, getAllTransactions, getAdminDashboard, getPendingSlips, updateSlipStatus} = require('../controllers/adminController');
 
 // ดึงรายการชีทที่รอตรวจสอบ
 router.get('/review-sheets', protect, getPendingSheets);
@@ -17,5 +17,8 @@ router.get('/dashboard', protect, getAdminDashboard);
 
 // ดึงรายการสลิปที่รอการตรวจสอบ
 router.get('/slips', protect, getPendingSlips);
+
+// อัปเดตสถานะสลิป
+router.put('/slips/:id', protect, updateSlipStatus);
 
 module.exports = router;
