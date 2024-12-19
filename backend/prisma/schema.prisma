@@ -50,6 +50,7 @@ model Order {
 
   user      User     @relation(fields: [userId], references: [id]) // ความสัมพันธ์กับ User
   sheet     Sheet    @relation(fields: [sheetId], references: [id]) // ความสัมพันธ์กับ Sheet
+  paymentSlip PaymentSlip?  // ความสัมพันธ์กับ PaymentSlip (อาจไม่มีในบางคำสั่งซื้อ)
 }
 
 // **Notification Model**: เก็บข้อมูลการแจ้งเตือน
@@ -61,3 +62,13 @@ model Notification {
   isRead    Boolean  @default(false)                   // สถานะการอ่าน (true: อ่านแล้ว, false: ยังไม่ได้อ่าน)
   createdAt DateTime @default(now())                   // วันที่สร้างการแจ้งเตือน
 }
+
+model PaymentSlip {
+  id          Int      @id @default(autoincrement())
+  orderId     Int      @unique                             // Foreign Key และต้องไม่ซ้ำ
+  order       Order    @relation(fields: [orderId], references: [id]) // เชื่อมกับ Order
+  slipUrl     String   // URL ของไฟล์สลิป
+  status      String   @default("pending")                // pending, approved, rejected
+  createdAt   DateTime @default(now())                    // วันที่สร้าง
+}
+
