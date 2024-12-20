@@ -109,3 +109,34 @@ exports.getUserSummary = async (req, res) => {
       });
     }
 };
+
+// ดึงข้อมูลสรุปคำสั่งซื้อ
+exports.getOrderSummary = async (req, res) => {
+    try {
+      // นับจำนวนคำสั่งซื้อทั้งหมด
+      const totalOrders = await prisma.order.count();
+  
+      // นับจำนวนคำสั่งซื้อที่ชำระเงินแล้ว
+      const paidOrders = await prisma.order.count({
+        where: { status: 'paid' },
+      });
+  
+      // นับจำนวนคำสั่งซื้อที่รอดำเนินการ
+      const pendingOrders = await prisma.order.count({
+        where: { status: 'pending' },
+      });
+  
+      res.status(200).json({
+        message: 'Order summary fetched successfully',
+        totalOrders,
+        paidOrders,
+        pendingOrders,
+      });
+    } catch (error) {
+      console.error('Error fetching order summary:', error);
+      res.status(500).json({
+        message: 'Something went wrong',
+        error: error.message,
+      });
+    }
+};
