@@ -1,0 +1,1274 @@
+openapi: 3.0.0
+info:
+  title: SheetWise API
+  description: API documentation for the SheetWise application
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000
+    description: Local server
+paths:
+  /api/auth/register:
+    post:
+      summary: Register a new user
+      description: Creates a new user account.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: example@example.com
+                password:
+                  type: string
+                  example: password123
+                name:
+                  type: string
+                  example: John Doe
+      responses:
+        '201':
+          description: User created successfully
+        '400':
+          description: Invalid request data
+
+  /api/auth/login:
+    post:
+      summary: Login user
+      description: Authenticates user and returns a JWT token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: example@example.com
+                password:
+                  type: string
+                  example: password123
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        '401':
+          description: Unauthorized
+
+  /api/auth/logout:
+    post:
+      summary: Logout user
+      description: Logs out the user by invalidating the session.
+      responses:
+        '200':
+          description: Logout successful
+
+  /api/auth/forgot-password:
+    post:
+      summary: Forgot Password
+      description: Sends a password reset link to the user's email.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: example@example.com
+      responses:
+        '200':
+          description: Password reset link sent successfully
+        '404':
+          description: User not found
+
+  /api/auth/profile:
+    get:
+      summary: Get User Profile
+      description: Retrieves the profile of the logged-in user.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  name:
+                    type: string
+                    example: John Doe
+                  email:
+                    type: string
+                    example: example@example.com
+        '401':
+          description: Unauthorized
+
+  /api/auth/register:
+    post:
+      summary: Register a new user
+      description: Creates a new user account.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: example@example.com
+                password:
+                  type: string
+                  example: password123
+                name:
+                  type: string
+                  example: John Doe
+      responses:
+        '201':
+          description: User created successfully
+        '400':
+          description: Invalid request data
+
+  /api/users/profile:
+    get:
+      summary: Get current user's profile
+      description: Retrieves the profile of the currently logged-in user.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  name:
+                    type: string
+                    example: John Doe
+                  email:
+                    type: string
+                    example: example@example.com
+        '401':
+          description: Unauthorized
+
+    put:
+      summary: Update current user's profile
+      description: Updates the profile of the currently logged-in user.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: John Doe Updated
+                profilePicture:
+                  type: string
+                  format: binary
+                  example: profile_picture.png
+      responses:
+        '200':
+          description: User profile updated successfully
+        '400':
+          description: Invalid request data
+        '401':
+          description: Unauthorized
+
+  /api/users:
+    get:
+      summary: Get all users (Admin only)
+      description: Retrieves a list of all users in the system.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of users retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    name:
+                      type: string
+                      example: John Doe
+                    email:
+                      type: string
+                      example: example@example.com
+        '403':
+          description: Forbidden (only admins can access this route)
+
+  /api/users/{id}:
+    delete:
+      summary: Delete a user (Admin only)
+      description: Deletes a user from the system.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the user to delete
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: User deleted successfully
+        '404':
+          description: User not found
+        '403':
+          description: Forbidden (only admins can access this route)
+  /api/sheets/upload:
+    post:
+      summary: Upload a new sheet
+      description: Allows users to upload a new sheet with details such as title, description, and price.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: React Basics
+                description:
+                  type: string
+                  example: A beginner's guide to React.js
+                price:
+                  type: number
+                  example: 10.99
+                category:
+                  type: string
+                  example: Programming
+      responses:
+        '201':
+          description: Sheet uploaded successfully
+        '400':
+          description: Invalid request data
+        '401':
+          description: Unauthorized
+
+  /api/sheets:
+    get:
+      summary: Get all approved sheets
+      description: Retrieves a list of all approved sheets with optional filters such as category and price range.
+      parameters:
+        - name: search
+          in: query
+          description: Keyword to search in the sheet title or description
+          required: false
+          schema:
+            type: string
+        - name: category
+          in: query
+          description: Filter by category
+          required: false
+          schema:
+            type: string
+        - name: price_min
+          in: query
+          description: Minimum price
+          required: false
+          schema:
+            type: number
+        - name: price_max
+          in: query
+          description: Maximum price
+          required: false
+          schema:
+            type: number
+        - name: sort
+          in: query
+          description: Field to sort by (e.g., price, createdAt)
+          required: false
+          schema:
+            type: string
+        - name: order
+          in: query
+          description: Sorting order (asc or desc)
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of sheets retrieved successfully
+        '400':
+          description: Invalid query parameters
+
+  /api/sheets/{id}:
+    get:
+      summary: Get sheet details by ID
+      description: Retrieves details of a specific sheet, including title, price, status, and download link.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the sheet
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Sheet details retrieved successfully
+        '404':
+          description: Sheet not found
+
+    put:
+      summary: Update sheet status (Admin only)
+      description: Updates the status of a sheet to either `approved` or `rejected`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the sheet
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [approved, rejected]
+                  example: approved
+                reason:
+                  type: string
+                  example: Excellent quality
+      responses:
+        '200':
+          description: Sheet status updated successfully
+        '404':
+          description: Sheet not found
+        '403':
+          description: Forbidden (only admins can access this route)
+
+    delete:
+      summary: Delete a sheet
+      description: Deletes a sheet uploaded by the user.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the sheet
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Sheet deleted successfully
+        '404':
+          description: Sheet not found
+
+  /api/orders:
+    post:
+      summary: Create a new order
+      description: Creates a new order for a sheet with the initial status `pending`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sheetId:
+                  type: integer
+                  example: 1
+                amount:
+                  type: number
+                  example: 19.99
+      responses:
+        '201':
+          description: Order created successfully
+        '400':
+          description: Invalid request data
+        '401':
+          description: Unauthorized
+
+    get:
+      summary: Get all orders for the current user
+      description: Retrieves a list of all orders made by the authenticated user.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of orders retrieved successfully
+        '401':
+          description: Unauthorized
+
+  /api/orders/{id}:
+    get:
+      summary: Get order details by ID
+      description: Retrieves details of a specific order, including the payment status.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the order
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Order details retrieved successfully
+        '404':
+          description: Order not found
+        '401':
+          description: Unauthorized
+
+    put:
+      summary: Confirm order payment
+      description: Updates the order status from `pending` to `paid`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the order
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Order payment confirmed successfully
+        '404':
+          description: Order not found
+        '403':
+          description: Access denied (not the owner of the order)
+        '401':
+          description: Unauthorized
+
+  /api/orders/{id}/download:
+    get:
+      summary: Download sheet for a paid order
+      description: Allows a user to download the sheet associated with a paid order.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the order
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Download link generated successfully
+        '404':
+          description: Order not found
+        '403':
+          description: Access denied (not the owner of the order or order not paid)
+        '401':
+          description: Unauthorized
+
+  /api/admin/review-sheets:
+    get:
+      summary: Get all sheets pending review
+      description: Retrieves a list of all sheets that are waiting for approval.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of pending sheets retrieved successfully
+        '401':
+          description: Unauthorized
+        '403':
+          description: Access denied (not an admin)
+
+  /api/admin/review-sheets/{id}:
+    put:
+      summary: Update the status of a sheet
+      description: Allows an admin to approve or reject a sheet by updating its status.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the sheet
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [approved, rejected]
+                  example: approved
+                reason:
+                  type: string
+                  example: "Sheet does not meet the quality guidelines."
+      responses:
+        '200':
+          description: Sheet status updated successfully
+        '404':
+          description: Sheet not found
+        '401':
+          description: Unauthorized
+        '403':
+          description: Access denied (not an admin)
+
+  /api/admin/transactions:
+    get:
+      summary: Get all transactions
+      description: Retrieves a list of all payment transactions in the system.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of transactions retrieved successfully
+        '401':
+          description: Unauthorized
+        '403':
+          description: Access denied (not an admin)
+
+  /api/notifications:
+    get:
+      summary: Get all notifications for a user
+      description: Retrieves a list of all notifications for the currently authenticated user.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of notifications retrieved successfully
+        '401':
+          description: Unauthorized
+    post:
+      summary: Create a new notification
+      description: Allows admin or the system to create a new notification for a user.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                  example: 1
+                message:
+                  type: string
+                  example: "Your sheet has been approved."
+      responses:
+        '201':
+          description: Notification created successfully
+        '400':
+          description: Invalid request data
+        '401':
+          description: Unauthorized
+
+  /api/notifications/{id}:
+    put:
+      summary: Update notification status
+      description: Marks a specific notification as read.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the notification
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                isRead:
+                  type: boolean
+                  example: true
+      responses:
+        '200':
+          description: Notification status updated successfully
+        '404':
+          description: Notification not found
+        '401':
+          description: Unauthorized
+
+  /api/files/download/{id}:
+    get:
+      summary: Download a purchased sheet file
+      description: Allows users to download a sheet file they have purchased, ensuring the purchase is verified.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the purchased sheet
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: File download successful
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '403':
+          description: Access denied. The user has not purchased this sheet or the sheet is not available for download.
+        '404':
+          description: Sheet not found
+        '401':
+          description: Unauthorized
+
+  /api/sheets:
+    get:
+      summary: Fetch all sheets with search and filter options
+      description: Retrieve a list of sheets with optional search and filter criteria.
+      parameters:
+        - name: search
+          in: query
+          required: false
+          description: Keyword to search in sheet titles or descriptions
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: false
+          description: Filter by sheet status (e.g., approved, pending, rejected)
+          schema:
+            type: string
+        - name: price_min
+          in: query
+          required: false
+          description: Minimum price for filtering sheets
+          schema:
+            type: number
+            format: float
+        - name: price_max
+          in: query
+          required: false
+          description: Maximum price for filtering sheets
+          schema:
+            type: number
+            format: float
+        - name: category
+          in: query
+          required: false
+          description: Filter by category
+          schema:
+            type: string
+        - name: sort
+          in: query
+          required: false
+          description: Field to sort the sheets by (e.g., price, createdAt)
+          schema:
+            type: string
+        - name: order
+          in: query
+          required: false
+          description: Order of sorting (asc or desc)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of sheets fetched successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    title:
+                      type: string
+                    description:
+                      type: string
+                    price:
+                      type: number
+                      format: float
+                    status:
+                      type: string
+                    createdAt:
+                      type: string
+                      format: date-time
+        '400':
+          description: Invalid query parameters
+        '401':
+          description: Unauthorized
+
+  /api/admin/dashboard:
+    get:
+      summary: Fetch admin dashboard statistics
+      description: Retrieve statistics for the admin dashboard, including total sales, user registrations, and pending sheets.
+      responses:
+        '200':
+          description: Dashboard statistics fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalUsers:
+                    type: integer
+                    description: Total number of registered users
+                  totalSheets:
+                    type: integer
+                    description: Total number of sheets
+                  totalSales:
+                    type: number
+                    format: float
+                    description: Total sales amount
+                  pendingSheets:
+                    type: integer
+                    description: Number of sheets pending approval
+                  recentOrders:
+                    type: array
+                    description: Recent orders overview
+                    items:
+                      type: object
+                      properties:
+                        orderId:
+                          type: integer
+                        amount:
+                          type: number
+                          format: float
+                        status:
+                          type: string
+        '401':
+          description: Unauthorized access
+
+  /api/payments/qr:
+    post:
+      summary: Generate a QR Code for payment
+      description: Create a QR Code for payment based on the specified order and amount.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                orderId:
+                  type: integer
+                  description: ID of the order for which the payment is being made
+                  example: 1
+                amount:
+                  type: number
+                  format: float
+                  description: Payment amount
+                  example: 100.00
+      responses:
+        '200':
+          description: QR Code generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: QR Code generated successfully
+                  qrCode:
+                    type: string
+                    description: Base64 encoded QR Code image
+                    example: "data:image/png;base64,..."
+                  amount:
+                    type: number
+                    format: float
+                    description: Payment amount
+                    example: 100.00
+                  orderId:
+                    type: integer
+                    description: Order ID
+                    example: 1
+        '400':
+          description: Invalid request data
+        '404':
+          description: Order not found
+        '500':
+          description: Internal server error
+
+  /api/payments/upload:
+    post:
+      summary: Upload a payment slip
+      description: Allow users to upload a payment slip for verification.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                orderId:
+                  type: integer
+                  description: ID of the order associated with the payment
+                  example: 1
+                slip:
+                  type: string
+                  format: binary
+                  description: The payment slip file to be uploaded
+      responses:
+        '200':
+          description: Payment slip uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Payment slip uploaded successfully
+                  slip:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        description: ID of the uploaded slip
+                        example: 1
+                      orderId:
+                        type: integer
+                        description: Associated order ID
+                        example: 1
+                      slipUrl:
+                        type: string
+                        description: URL of the uploaded slip
+                        example: /uploads/slip123.jpg
+                      status:
+                        type: string
+                        description: Current status of the slip (e.g., pending, approved, rejected)
+                        example: pending
+                      createdAt:
+                        type: string
+                        format: date-time
+                        description: Timestamp of the slip upload
+                        example: "2024-12-20T12:34:56Z"
+        '400':
+          description: Invalid request data
+        '404':
+          description: Order not found
+        '500':
+          description: Internal server error
+
+  /api/admin/slips:
+    get:
+      summary: Get all pending payment slips
+      description: Fetch a list of all payment slips that are pending verification. Accessible by Admin only.
+      security:
+        - bearerAuth: [] # Requires Admin authentication
+      responses:
+        '200':
+          description: Successfully retrieved list of pending payment slips
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Pending payment slips retrieved successfully
+                  slips:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          description: ID of the payment slip
+                          example: 1
+                        orderId:
+                          type: integer
+                          description: Associated order ID
+                          example: 1
+                        slipUrl:
+                          type: string
+                          description: URL of the uploaded payment slip
+                          example: /uploads/slip123.jpg
+                        status:
+                          type: string
+                          description: Current status of the slip
+                          example: pending
+                        createdAt:
+                          type: string
+                          format: date-time
+                          description: Timestamp of the slip upload
+                          example: "2024-12-20T12:34:56Z"
+                        updatedAt:
+                          type: string
+                          format: date-time
+                          description: Timestamp of the last status update
+                          example: "2024-12-20T13:45:00Z"
+        '403':
+          description: Unauthorized access
+        '500':
+          description: Internal server error
+
+  /api/admin/slips/{id}:
+    put:
+      summary: Approve or reject a payment slip
+      description: Update the status of a payment slip to `approved` or `rejected`. Accessible by Admin only.
+      security:
+        - bearerAuth: [] # Requires Admin authentication
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID of the payment slip to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [approved, rejected]
+                  description: New status for the payment slip
+                  example: approved
+                reason:
+                  type: string
+                  description: Optional reason for rejecting the slip
+                  example: "Payment amount mismatch"
+      responses:
+        '200':
+          description: Payment slip status updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Payment slip updated successfully
+                  slip:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        description: ID of the payment slip
+                        example: 1
+                      orderId:
+                        type: integer
+                        description: Associated order ID
+                        example: 1
+                      status:
+                        type: string
+                        description: Updated status of the slip
+                        example: approved
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        description: Timestamp of the status update
+                        example: "2024-12-20T14:00:00Z"
+        '400':
+          description: Invalid request or status
+        '403':
+          description: Unauthorized access
+        '404':
+          description: Payment slip not found
+        '500':
+          description: Internal server error
+
+  /api/payments/confirm:
+    post:
+      summary: Manually confirm a payment
+      description: Confirm a payment and update the associated order status to `paid`. Accessible by Admin only.
+      security:
+        - bearerAuth: [] # Requires Admin authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                orderId:
+                  type: integer
+                  description: ID of the order to confirm
+                  example: 1
+                transactionId:
+                  type: string
+                  description: Optional transaction ID for reference
+                  example: "TXN123456789"
+      responses:
+        '200':
+          description: Payment confirmed and order updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Payment confirmed successfully
+                  order:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        description: ID of the updated order
+                        example: 1
+                      status:
+                        type: string
+                        description: Updated status of the order
+                        example: paid
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        description: Timestamp of the update
+                        example: "2024-12-20T15:00:00Z"
+        '400':
+          description: Invalid request data or order already paid
+        '403':
+          description: Unauthorized access
+        '404':
+          description: Order not found
+        '500':
+          description: Internal server error
+
+  /api/analytics/sheets/sales:
+    get:
+      summary: Get total sheets sold and total revenue
+      description: Returns the total number of sheets sold and the total revenue generated.
+      security:
+        - bearerAuth: [] # Requires Admin authentication
+      responses:
+        '200':
+          description: Total sheets sold and revenue details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalSheetsSold:
+                    type: integer
+                    description: Total number of sheets sold
+                    example: 150
+                  totalRevenue:
+                    type: number
+                    format: float
+                    description: Total revenue generated from sheet sales
+                    example: 7500.50
+        '403':
+          description: Unauthorized access
+        '500':
+          description: Internal server error
+
+  /api/analytics/sheets/popular:
+    get:
+      summary: Get top 5 best-selling sheets
+      description: Returns the top 5 best-selling sheets along with their details.
+      security:
+        - bearerAuth: [] # Requires Admin authentication
+      responses:
+        '200':
+          description: Top 5 best-selling sheets
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  topSheets:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          description: ID of the sheet
+                          example: 1
+                        title:
+                          type: string
+                          description: Title of the sheet
+                          example: "Introduction to React"
+                        salesCount:
+                          type: integer
+                          description: Number of times the sheet has been sold
+                          example: 50
+                        revenue:
+                          type: number
+                          format: float
+                          description: Revenue generated from this sheet
+                          example: 2500.00
+        '403':
+          description: Unauthorized access
+        '500':
+          description: Internal server error
+
+  /api/analytics/users/summary:
+    get:
+      summary: Get user analytics summary
+      description: Returns a summary of user analytics, including total users, new users today, and most recent active users.
+      security:
+        - bearerAuth: [] # Requires Admin authentication
+      responses:
+        '200':
+          description: User analytics summary
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalUsers:
+                    type: integer
+                    description: Total number of registered users
+                    example: 1500
+                  newUsersToday:
+                    type: integer
+                    description: Number of new users registered today
+                    example: 10
+                  recentActiveUsers:
+                    type: array
+                    description: List of recently active users
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          description: ID of the user
+                          example: 1
+                        name:
+                          type: string
+                          description: Name of the user
+                          example: "John Doe"
+                        lastActive:
+                          type: string
+                          format: date-time
+                          description: The last time the user was active
+                          example: "2024-12-20T10:45:00Z"
+        '403':
+          description: Unauthorized access
+        '500':
+          description: Internal server error
+
+  /api/analytics/orders/summary:
+    get:
+      summary: Get order analytics summary
+      description: Returns a summary of order analytics, including total orders, paid orders, and pending orders.
+      security:
+        - bearerAuth: [] # Requires Admin authentication
+      responses:
+        '200':
+          description: Order analytics summary
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalOrders:
+                    type: integer
+                    description: Total number of orders
+                    example: 500
+                  paidOrders:
+                    type: integer
+                    description: Number of paid orders
+                    example: 350
+                  pendingOrders:
+                    type: integer
+                    description: Number of pending orders
+                    example: 150
+        '403':
+          description: Unauthorized access
+        '500':
+          description: Internal server error
+
+  /api/analytics/orders/revenue:
+    get:
+      summary: Get revenue analytics
+      description: Returns revenue data, including daily, monthly, or within a custom date range.
+      security:
+        - bearerAuth: [] # Requires Admin authentication
+      parameters:
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date
+          required: false
+          description: Start date for the revenue calculation (YYYY-MM-DD)
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date
+          required: false
+          description: End date for the revenue calculation (YYYY-MM-DD)
+        - in: query
+          name: interval
+          schema:
+            type: string
+            enum: [daily, monthly, yearly]
+          required: false
+          description: Interval for grouping revenue data
+      responses:
+        '200':
+          description: Revenue analytics data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  revenue:
+                    type: array
+                    description: List of revenue data grouped by the specified interval
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          format: date
+                          description: The date or start of the interval
+                          example: "2024-12-20"
+                        totalRevenue:
+                          type: number
+                          format: float
+                          description: Total revenue for the interval
+                          example: 1500.00
+        '403':
+          description: Unauthorized access
+        '500':
+          description: Internal server error
