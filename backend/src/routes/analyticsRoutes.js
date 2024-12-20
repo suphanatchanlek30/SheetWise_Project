@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middlewares/authMiddleware');
-const { getSheetSalesAnalytics, getPopularSheets, getUserSummary, getOrderSummary } = require('../controllers/analyticsController');
+const { getSheetSalesAnalytics, getPopularSheets, getUserSummary, getOrderSummary, getOrderRevenue } = require('../controllers/analyticsController');
 
 // เส้นทางสำหรับดึงยอดขายชีททั้งหมดและยอดขายรวม
 router.get('/sheets/sales', protect, getSheetSalesAnalytics);
@@ -14,5 +14,8 @@ router.get('/users/summary', protect, getUserSummary);
 
 // เส้นทางสำหรับดึงข้อมูลสรุปคำสั่งซื้อ
 router.get('/orders/summary', protect, getOrderSummary);
+
+// เส้นทางสำหรับดึงยอดขายรวมตามวัน, เดือน หรือช่วงเวลา
+router.get('/orders/revenue', protect, getOrderRevenue);
 
 module.exports = router;

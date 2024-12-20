@@ -140,3 +140,64 @@ exports.getOrderSummary = async (req, res) => {
       });
     }
 };
+
+// ดึงยอดขายรวมตามวัน, เดือน หรือช่วงเวลา
+exports.getOrderRevenue = async (req, res) => {
+    try {
+      const { startDate, endDate, groupBy } = req.query;
+  
+      // ตรวจสอบว่ามีการกำหนดวันที่เริ่มต้นหรือสิ้นสุดหรือไม่
+      const whereClause = {
+        status: 'paid', // เฉพาะคำสั่งซื้อที่ชำระเงินแล้ว
+      };
+  
+      if (startDate && endDate) {
+        whereClause.createdAt = {
+          gte: new Date(startDate),
+          lte: new Date(endDate),
+        };
+      }
+  
+      // คำนวณยอดขายรวมตามการจัดกลุ่ม
+      const revenueData = await prisma.order.groupBy({
+        by: [groupBy === 'daily' ? 'createdAt' : groupBy === 'monthly' ? 'createdAt' : 'createdAt'],
+        _sum: { amount: true },
+        where: whereClause,
+        orderBy: { createdAt: 'asc' },
+      });
+  
+      // จัดข้อมูลตามกลุ่ม
+      const groupedRevenue = revenueData.reduce((acc, order) => {
+        const date = new Date(order.createdAt);
+  
+        // แปลงวันที่ตามประเภทการจัดกลุ่ม
+        let key;
+        if (groupBy === 'daily') {
+          key = date.toISOString().split('T')[0]; // yyyy-mm-dd
+        } else if (groupBy === 'monthly') {
+          key = `${date.getFullYear()}-${(date.getMonth() + 1)
+            .toString()
+            .padStart(2, '0')}`; // yyyy-mm
+        } else {
+          key = date.getFullYear(); // yyyy
+        }
+  
+        if (!acc[key]) {
+          acc[key] = 0;
+        }
+        acc[key] += order._sum.amount;
+        return acc;
+      }, {});
+  
+      res.status(200).json({
+        message: 'Order revenue fetched successfully',
+        revenue: groupedRevenue,
+      });
+    } catch (error) {
+      console.error('Error fetching order revenue:', error);
+      res.status(500).json({
+        message: 'Something went wrong',
+        error: error.message,
+      });
+    }
+};
