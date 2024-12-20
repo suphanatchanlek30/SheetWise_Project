@@ -71,3 +71,41 @@ exports.getPopularSheets = async (req, res) => {
       });
     }
 };
+
+// ดึงข้อมูลสรุปผู้ใช้งาน
+exports.getUserSummary = async (req, res) => {
+    try {
+      // ดึงจำนวนผู้ใช้ทั้งหมด
+      const totalUsers = await prisma.user.count();
+  
+      // ดึงจำนวนผู้ใช้ที่สมัครวันนี้
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // ตั้งเวลาเป็น 00:00:00
+      const usersRegisteredToday = await prisma.user.count({
+        where: {
+          createdAt: {
+            gte: today, // สมัครหลังจากเที่ยงคืนของวันนี้
+          },
+        },
+      });
+  
+      // ดึงข้อมูลผู้ใช้ที่ใช้งานล่าสุด (เรียงตาม createdAt)
+      const lastActiveUsers = await prisma.user.findMany({
+        orderBy: { createdAt: 'desc' }, // เรียงลำดับตามเวลาที่สร้างล่าสุด
+        take: 5, // แสดงผู้ใช้ 5 คนล่าสุด
+      });
+  
+      res.status(200).json({
+        message: 'User summary fetched successfully',
+        totalUsers,
+        usersRegisteredToday,
+        lastActiveUsers,
+      });
+    } catch (error) {
+      console.error('Error fetching user summary:', error);
+      res.status(500).json({
+        message: 'Something went wrong',
+        error: error.message,
+      });
+    }
+};
