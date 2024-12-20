@@ -10,6 +10,7 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const fileRoutes = require('./routes/fileRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const analyticsRoutes = require('./routes/analyticsRoutes');
 
 // โหลดตัวแปรแวดล้อมจาก .env
 dotenv.config();
@@ -29,6 +30,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // เส้นทางพื้นฐาน
 app.get('/', (req, res) => {
